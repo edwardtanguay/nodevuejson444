@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title><%=pageTitle%></title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/main.css">
+	<link rel="stylesheet" type="text/css"
+		href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.4/vue.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.min.js"></script>
+</head>
+
+<body>
+	<div id="app" style="display:none">
+		<div>
+			Flashcards:
+			<hr />
+			<div class="buttonArea">
+				<div class="dropdown">
+					<span v-if="currentCategoryName!==''" @click="loadPageData()" class="categoryLabel">Category:
+					</span>
+					<button type="button" class="btn btn-minimal dropdown-toggle btn-sm" data-toggle="dropdown">
+						<span v-if="currentCategoryName===''">Choose Category</span>
+						<span v-if="currentCategoryName!==''">{{currentCategoryName}}</span>
+					</button>
+					<div class="dropdown-menu">
+						<a class="dropdown-item categoryItem" href="#" @click="switchCategory(item.name)"
+							v-for="item in categories">{{item.name}} <span class="count">({{item.count}})</span></a>
+					</div>
+				</div>
+				<button class="btn btn-minimal btn-sm"
+					@click="displayFlashcardArea()">{{addFlashcardButtonText}}</button>
+			</div>
+			<hr />
+			<div class="flashcardArea" v-show="showFlashcardArea">
+				<form>
+					<div class="form-group">
+						<label for="category">Category:</label>
+						<input type="text" class="form-control fieldCategory" v-model="addFlashcardForm.category"
+							id="category" :disabled="addFlashcardFormSaving">
+					</div>
+					<div class="form-group">
+						<label for="front">Front:</label>
+						<input type="text" class="form-control" id="front" v-model="addFlashcardForm.front"
+							:disabled="addFlashcardFormSaving">
+					</div>
+					<div class="form-group">
+						<label for="back">Back:</label>
+						<input type="text" class="form-control" id="back" v-model="addFlashcardForm.back"
+							:disabled="addFlashcardFormSaving">
+					</div>
+					<div class="formButtonArea">
+						<button type="button" class="btn btn-minimal" @click="saveFlashcard()"
+							:disabled="addFlashcardFormSaving"><span v-show="!addFlashcardFormSaving">Save</span><i
+								class="fa fa-spinner fa-pulse page_loading_spinner" v-show="addFlashcardFormSaving"
+								aria-hidden="true"></i></button>
+
+					</div>
+				</form>
+			</div>
+
+			<div v-show="!pageLoaded">
+				<i class="fa fa-spinner fa-pulse page_loading_spinner" aria-hidden="true"></i>
+			</div>
+			<div class="content" v-show="pageLoaded">
+				<div class="flashcard" v-for="item in flashcards">
+					<div class="icon"><img src="images/card_back.png" alt="card_back"></div>
+					<div class="infoArea">
+						<div class="category">{{item.category}}</div>
+						<div class="front">{{item.front}}</div>
+						<div class="back">{{item.back}}</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		const app = new Vue({
+			el: '#app',
+			data: {
+				flashcards: [],
+				pageLoaded: false,
+				pageError: false,
+				categories: [],
+				currentCategoryName: '',
+				showFlashcardArea: false,
+				addFlashcardButtonText: 'Add Flashcard',
+				addFlashcardForm: {
+					category: '',
+					front: '',
+					back: ''
+				},
+				addFlashcardFormSaving: false
+			},
+			methods: {
+				initialize: function () {
+					$("#app").fadeIn(500);
+					this.loadPageData();
+				},
+				loadPageData: function () {
+					this.currentCategoryName = '';
+					this.pageLoaded = false;
+					axios({
+						method: 'post',
+						url: 'backend',
+						data: {
+							action: 'loadPageData'
+						}
+					}).then(response => {
+						const data = response.data;
+						this.flashcards = data.flashcards;
+						this.categories = data.categories;
+						this.pageLoaded = true;
+					}).catch(function (error) {
+						this.pageError = true;
+					});
+				},
+				switchCategory: function (categoryName) {
+					this.currentCategoryName = categoryName;
+					this.loadCategory(categoryName);
+				},
+				loadCategory: function (categoryName) {
+					this.pageLoaded = false;
+					axios({
+						method: 'post',
+						url: 'backend',
+						data: {
+							action: 'loadCategory',
+							categoryName: categoryName
+						}
+					}).then(response => {
+						const data = response.data;
+						this.flashcards = data.flashcards;
+						this.pageLoaded = true;
+					}).catch(function (error) {
+						this.pageError = true;
+					});
+				},
+				displayFlashcardArea: function () {
+					this.showFlashcardArea = !this.showFlashcardArea;
+					if (this.showFlashcardArea) {
+						setTimeout(() => {
+							$('#category').focus();
+						}, 100);
+						this.addFlashcardButtonText = 'Hide Add Flashcard';
+					} else {
+						this.addFlashcardButtonText = 'Add Flashcard';
+					}
+				},
+				saveFlashcard: function () {
+					this.saveFlashcardData();
+				},
+				clearAddFlashcardForm: function () {
+					this.addFlashcardForm.category = '';
+					this.addFlashcardForm.front = '';
+					this.addFlashcardForm.back = '';
+				},
+				saveFlashcardData: function () {
+					this.addFlashcardFormSaving = true;
+					axios({
+						method: 'post',
+						url: 'backend',
+						data: {
+							action: 'saveFlashcard',
+							flashcard: this.addFlashcardForm
+						}
+					}).then(response => {
+						const data = response.data;
+						this.success = data.success;
+						console.log(this.success);
+						this.showFlashcardArea = false;
+						this.addFlashcardFormSaving = false;
+						this.addFlashcardButtonText = 'Add Flashcard';
+						this.clearAddFlashcardForm();
+						this.loadPageData();
+					}).catch(function (error) {
+						this.pageError = true;
+					});
+				}
+			}
+		});
+		app.initialize();
+	</script>
+</body>
+
+</html>

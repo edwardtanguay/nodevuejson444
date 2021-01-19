@@ -1,0 +1,82 @@
+body {
+	padding: 2em;
+}
+
+.flashcard {
+	margin-bottom: 1.5em;
+	display: flex;
+}
+
+.flashcard .infoArea {
+	margin-left: 0.5em;
+	margin-top: -0.4em;
+}
+
+.flashcard .category {
+	font-variant: small-caps;
+	color: #555;
+	font-size: 0.9em;
+}
+
+.flashcard .front {
+	line-height: 1.2em;
+}
+
+.flashcard .back {
+	font-family: "Courier New", Courier, monospace;
+	color: brown;
+	background-color: #eee;
+	font-size: 0.8em;
+}
+
+.btn-minimal {
+	background-color: #eee;
+}
+
+.categoryItem {
+	font-variant: small-caps;
+	color: #555;
+	font-size: 0.9em;
+}
+
+.page_loading_spinner {
+	font-size: 30px !important;
+}
+
+.count {
+	color: #aaa;
+}
+
+.categoryLabel {
+	cursor: pointer;
+}
+
+.buttonArea {
+	display: flex;
+}
+
+.buttonArea * {
+	margin-right: 0.3em;
+}
+
+.flashcardArea {
+	background-color: #fafafa;
+	padding: 2em;
+	margin-top: 2em;
+	margin-bottom: 2em;
+	border: 1px solid #eee;
+	border-radius: 5px;
+	max-width: 500px;
+	-webkit-box-shadow: 10px 10px 41px -7px rgba(140, 138, 140, 1);
+	-moz-box-shadow: 10px 10px 41px -7px rgba(140, 138, 140, 1);
+	box-shadow: 10px 10px 41px -7px rgba(140, 138, 140, 1);
+}
+
+.fieldCategory {
+	width: 200px;
+}
+
+.formButtonArea {
+	display: flex;
+	justify-content: flex-end;
+}
